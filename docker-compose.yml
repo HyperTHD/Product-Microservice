@@ -1,22 +1,26 @@
 version: '3'
 services:
-    mongo:
-        image: mongo:latest
-        restart: always
-        environment:
-            - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
-            - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
-        ports:
-            - '27017'
-        volumes:
-            - ./backend/db_data:/data/db
-    
     server:
-        container_name: 'api-server'
         build:
             context: './backend'
             dockerfile: Dockerfile
+        command: python -u app.py
         ports:
             - '5000:5000'
         depends_on: 
             - 'mongo'
+        volumes:
+            - ./backend:/app
+    mongo:
+        image: mongo:latest
+        restart: always
+        hostname: test_mongodb
+        environment:
+            - MONGO_INITDB_DATABASE=Product
+            - MONGO_INITDB_ROOT_USERNAME=root
+            - MONGO_INITDB_ROOT_PASSWORD=pass
+        volumes:
+            - ./backend/init-db.js:/docker-entrypoint-initdb.d/init-db.js:ro
+        ports:
+            - '27017:27017'
+    
